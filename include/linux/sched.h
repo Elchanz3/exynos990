@@ -1286,6 +1286,11 @@ struct task_struct {
 	/* Used by LSM modules for access restriction: */
 	void				*security;
 #endif
+
+#ifdef CONFIG_ANDROID_SIMPLE_LMK
+	struct task_struct		*simple_lmk_next;
+#endif
+
 #ifdef CONFIG_SEC_DEBUG_COMPLETE_HINT
 	struct completion		*x;
 #endif
