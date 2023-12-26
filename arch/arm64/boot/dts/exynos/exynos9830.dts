@@ -13883,7 +13883,7 @@
 		governor = "interactive";
 		interactive_info = <897000 0x5e 0x00>;
 		gpu_dvfs_table_size = <14 8>;
-		/*  8 columns      freq  down   up  stay  mif   little  middle   big  */
+   /*  8 columns        freq    down  up  stay   mif    little  middle   big  */
 		gpu_dvfs_table = <
 		        897000    78  100   5  2730000  1300000 1222000 1456000
 			832000    78  100   5  2730000  1300000 1222000 1456000
