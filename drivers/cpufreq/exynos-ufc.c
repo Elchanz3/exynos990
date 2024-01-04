@@ -628,7 +628,7 @@ int exynos_cpufreq_update_volt_table()
 	return ret;
 }
 
-#define CPUCL0_DVFS_TYPE 0
+#define CPUCL0_DVFS_TYPE 2
 
 static ssize_t show_cpucl0volt_table(struct kobject *kobj,
 				struct kobj_attribute *attr, char *buf)
@@ -664,7 +664,7 @@ static ssize_t store_cpucl0volt_table(struct kobject *kobj,
 	return count;
 }
 
-#define CPUCL1_DVFS_TYPE 1
+#define CPUCL1_DVFS_TYPE 3
 
 static ssize_t show_cpucl1volt_table(struct kobject *kobj,
 				struct kobj_attribute *attr, char *buf)
@@ -700,7 +700,7 @@ static ssize_t store_cpucl1volt_table(struct kobject *kobj,
 	return count;
 }
 
-#define CPUCL2_DVFS_TYPE 2
+#define CPUCL2_DVFS_TYPE 4
 
 static ssize_t show_cpucl2volt_table(struct kobject *kobj,
 				struct kobj_attribute *attr, char *buf)
