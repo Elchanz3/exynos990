@@ -495,8 +495,8 @@ static ssize_t show_asv_g_spec(int id, enum spec_volt_type type, char *buf)
 	unsigned int fused_volt, grp_volt = 0, volt;
 	struct dvfs_rate_volt rate_volt[48];
 	unsigned int (*spec_table)[10];
-	char *spec_table_name[4] = { "SPEC_CPUCL0", "SPEC_CPUCL1", "SPEC_CPUCL2", "SPEC_G3D" };
-	int cal_id[4] = { ACPM_VCLK_TYPE | 2, ACPM_VCLK_TYPE | 3, ACPM_VCLK_TYPE | 4, ACPM_VCLK_TYPE | 10 };
+	char *spec_table_name[5] = { "SPEC_CPUCL0", "SPEC_CPUCL1", "SPEC_CPUCL2", "SPEC_G3D" };
+	int cal_id[5] = { ACPM_VCLK_TYPE | 2, ACPM_VCLK_TYPE | 3, ACPM_VCLK_TYPE | 4, ACPM_VCLK_TYPE | 5, ACPM_VCLK_TYPE | 10 };
 	ssize_t size = 0;
 
 	asv_tbl_ver = asv_get_table_ver();
@@ -585,10 +585,10 @@ __ATTR(domain##_grp_volt, 0400, show_asv_g_spec_##domain##_grp_volt, NULL)
 	&asv_g_spec_##domain##_fused_volt.attr,							\
 	&asv_g_spec_##domain##_grp_volt.attr
 
-asv_g_spec(cpucl0, 0);
-asv_g_spec(cpucl1, 1);
-asv_g_spec(cpucl2, 2);
-asv_g_spec(g3d, 3);
+asv_g_spec(cpucl0, 2);
+asv_g_spec(cpucl1, 3);
+asv_g_spec(cpucl2, 4);
+asv_g_spec(g3d, 5);
 
 static struct attribute *asv_g_spec_attrs[] = {
 	asv_g_spec_attr(cpucl0),
@@ -863,7 +863,7 @@ unsigned int fvmap_read(unsigned int dvfs_type, int mode, unsigned int value)
 }
 static ssize_t show_patch(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return print_fvmap(buf, 2, 5); /* Only Print CL0/CL1/G3D to Buffer */
+	return print_fvmap(buf, 2, 3, 5); /* Only Print CL0/CL1/CL2/G3D to Buffer */
 }
 
 static ssize_t store_patch(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
