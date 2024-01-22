@@ -29,7 +29,7 @@ static struct samsung_clk_provider *exynos9830_clk_provider;
  */
 /* fixed rate clocks generated outside the soc */
 struct samsung_fixed_rate exynos9830_fixed_rate_ext_clks[] __initdata = {
-	FRATE(OSCCLK, "fin_pll", NULL, 0, 26000000),
+	FRATE(OSCCLK, "fin_pll", NULL, 0, 34200000),
 };
 
 /* HWACG VCLK */
