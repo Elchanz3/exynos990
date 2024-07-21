@@ -1794,7 +1794,7 @@
 
 				oscclk {
 					compatible = "samsung,exynos9830-oscclk";
-					clock-frequency = <34200000>;
+					clock-frequency = <0x18cba80>;
 				};
 			};
 
