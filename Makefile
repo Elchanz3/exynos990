@@ -684,8 +684,15 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
 KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 
+KBUILD_CFLAGS += -mcpu=cortex-a76.cortex-a55
 KBUILD_CFLAGS += -Ofast
+KBUILD_CFLAGS += -mfpu=neon
+KBUILD_CFLAGS += -ffast-math
+KBUILD_CFLAGS += -funroll-loops
+KBUILD_CFLAGS += -flto
+LDFLAGS += -flto
 
+MAKEFLAGS += -j$(nproc)
 
 ifeq ($(cc-name),clang)
 ifdef CONFIG_LLVM_POLLY
@@ -697,6 +704,7 @@ KBUILD_CFLAGS	+= -mllvm -polly \
 		   -mllvm -polly-detect-keep-going \
 		   -mllvm -polly-vectorizer=stripmine \
 		   -mllvm -polly-invariant-load-hoisting
+endif
 endif
 
 KBUILD_CFLAGS += $(call cc-ifversion, -lt, 0409, \
