@@ -362,8 +362,8 @@ HOST_LFS_LIBS := $(shell getconf LFS_LIBS 2>/dev/null)
 
 HOSTCC       = gcc
 HOSTCXX      = g++
-HOSTCC       = clang
-HOSTCXX      = clang++
+HOSTCC       = /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/clang
+HOSTCXX      = /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/clang++
 KBUILD_HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O3 \
 		-fomit-frame-pointer -std=gnu89 $(HOST_LFS_CFLAGS) \
 		$(HOSTCFLAGS)
@@ -374,13 +374,13 @@ KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
 # Make variables (CC, etc...)
 AS		= $(CROSS_COMPILE)as
 LD		= $(CROSS_COMPILE)ld
-CC              = /home/chanz22/tc/puppy_clang/bin/clang
+CC              = /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/clang
 CPP		= $(CC) -E
-AR		= /home/chanz22/tc/puppy_clang/bin/llvm-ar
-NM		= /home/chanz22/tc/puppy_clang/bin/llvm-nm
-STRIP		= /home/chanz22/tc/puppy_clang/bin/llvm-strip
-OBJCOPY		= /home/chanz22/tc/puppy_clang/bin/llvm-objcopy
-OBJDUMP		= /home/chanz22/tc/puppy_clang/bin/llvm-objdump
+AR		= /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/llvm-ar
+NM		= /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/llvm-nm
+STRIP		= /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/llvm-strip
+OBJCOPY		= /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/llvm-objcopy
+OBJDUMP		= /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/llvm-objdump
 LEX		= flex
 YACC		= bison
 AWK		= awk
@@ -394,7 +394,7 @@ PYTHON3		= python3
 CHECK		= sparse
 
 ifeq ($(CONFIG_EXYNOS_FMP_FIPS),)
-READELF        = /home/chanz22/tc/puppy_clang/bin/llvm-readelf
+READELF        = /home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/home/chanz22/tc/clang+llvm-12.0.0-aarch64-linux-gnu/bin/llvm-readelf
 export READELF
 endif
 
