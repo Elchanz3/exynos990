@@ -369,15 +369,15 @@ KBUILD_HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS) $(HOSTLDFLAGS)
 KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
 
 # Make variables (CC, etc...)
-AS		= $(CCACHE) /home/chanz22/tc/puppy_clang/bin/llvm-as
+AS		= $(CCACHE) llvm-as
 LD		= $(CCACHE) ld.lld
-CC              = $(CCACHE) /home/chanz22/tc/puppy_clang/bin/clang-13
+CC              = $(CCACHE) /home/chanz22/tc/aosp-clang-r412851/bin/clang
 CPP		= $(CC) -E
-AR		= $(CCACHE) /home/chanz22/tc/puppy_clang/bin/llvm-ar
-NM		= /home/chanz22/tc/puppy_clang/bin/llvm-nm
-STRIP		= /home/chanz22/tc/puppy_clang/bin/llvm-strip
-OBJCOPY		= $(CCACHE) /home/chanz22/tc/puppy_clang/bin/llvm-objcopy
-OBJDUMP		= $(CCACHE) /home/chanz22/tc/puppy_clang/bin/llvm-objdump
+AR		= $(CCACHE) llvm-ar
+NM		= llvm-nm
+STRIP		= llvm-strip
+OBJCOPY		= $(CCACHE) llvm-objcopy
+OBJDUMP		= $(CCACHE) llvm-objdump
 LEX		= flex
 YACC		= bison
 AWK		= awk
