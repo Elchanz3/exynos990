@@ -16,8 +16,6 @@ export ANDROID_MAJOR_VERSION=r
 export ARCH=arm64
 export SEC_BUILD_CONF_VENDOR_BUILD_OS=13
 
-export CCACHE=ccache
-
 DATE_START=$(date +"%s")
 
 make O="$OUT_DIR" chanz_c1s_defconfig
