@@ -49,14 +49,6 @@
 #include "qdf_net_if.h"
 #include "qdf_dev.h"
 
-#ifdef __KERNEL__
-    // Use kernel types
-    #include <linux/types.h>
-#else
-    // For user-space programs, include stdint.h
-    #include <stdint.h>
-#endif
-
 enum napi_decision_vector {
 	HIF_NAPI_NOEVENT = 0,
 	HIF_NAPI_INITED  = 1,
@@ -595,7 +587,7 @@ int hif_napi_event(struct hif_opaque_softc *hif_ctx, enum qca_napi_event event,
 	}
 
 	case NAPI_EVT_TPUT_STATE: {
-		tput_mode = (enum qca_napi_tput_state)(uintptr_t)data;
+		tput_mode = (enum qca_napi_tput_state)data;
 		if (tput_mode == QCA_NAPI_TPUT_LO) {
 			/* from TPUT_HI -> TPUT_LO */
 			NAPI_DEBUG("%s: Moving to napi_tput_LO state",

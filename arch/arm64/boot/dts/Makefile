@@ -34,10 +34,6 @@ dtbo-y += samsung/exynos990-z3s_eur_open_21.dtbo
 dtbo-y += samsung/exynos990-z3s_eur_open_22.dtbo
 dtbo-y += samsung/exynos990-z3s_eur_open_24.dtbo
 
-dtbo-y += samsung/exynos990-r8s_eur_open_00.dtbo
-dtbo-y += samsung/exynos990-r8s_eur_open_02.dtbo
-dtbo-y += samsung/exynos990-r8s_eur_open_05.dtbo
-
 dtbo-y += samsung/exynos990-c1s_eur_open_22.dtbo
 dtbo-y += samsung/exynos990-c1s_eur_open_20.dtbo
 dtbo-y += samsung/exynos990-c1s_eur_open_21.dtbo
