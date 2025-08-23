@@ -25,4 +25,7 @@ ifeq ($(CONFIG_MALI_DDK_VERSION),y)
 		ifeq ($(CONFIG_MALI_DDK_VALHALL_R39P0),y)
 			obj-$(CONFIG_MALI_MIDGARD) += bv_r39p0/
 		endif
+		ifeq ($(CONFIG_MALI_DDK_VALHALL_R44P0),y)
+	                obj-$(CONFIG_MALI_MIDGARD) += v_r44p0/
+                endif
 endif
