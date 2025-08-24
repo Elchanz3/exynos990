@@ -320,7 +320,7 @@ include scripts/subarch.include
 # Default value for CROSS_COMPILE is not to prefix executables
 # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
 ARCH            = arm64
-CROSS_COMPILE	?= /home/chanz22/tc/aarch64-linux-android-4.9-master/bin/aarch64-linux-android-
+CROSS_COMPILE	?= aarch64-linux-gnu
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
@@ -371,7 +371,7 @@ KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
 # Make variables (CC, etc...)
 AS		= $(CCACHE) llvm-as
 LD		= $(CCACHE) ld.lld
-CC              = $(CCACHE) /home/chanz22/tc/aosp-clang-r412851/bin/clang
+CC              = $(CCACHE) /home/chanz22/tc/puppy_clang/bin/clang
 CPP		= $(CC) -E
 AR		= $(CCACHE) llvm-ar
 NM		= llvm-nm
