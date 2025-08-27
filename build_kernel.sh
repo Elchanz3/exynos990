@@ -88,16 +88,7 @@ cd "$CDIR"
 # move generated image to builds dir renamed as Puppykernel
 mv "$CDIR"/AIK/image-new.img "$CDIR"/builds/"$IMAGE_NAME".img
 
-if [ -d "kout" ]; then
-    rm -r "kout"
-    echo "directory removed.."
-else
-    echo "pff. There is no 'kout' directory."
-fi
-
 echo "image done..."
-
-clear
 
     DATE_END=$(date +"%s")
     DIFF=$(($DATE_END - $DATE_START))

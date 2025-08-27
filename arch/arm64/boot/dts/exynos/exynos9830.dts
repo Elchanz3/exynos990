@@ -13880,7 +13880,7 @@
 		g3d_genpd_name = "pd-embedded_g3d";
 		#cooling-cells = <0x02>;
 		governor = "interactive";
-		interactive_info = <897000 0x5e 0x00>;
+		interactive_info = <897000 45 2>;
 		gpu_dvfs_table_size = <15 8>;
    /*  8 columns        freq    down  up  stay   mif    little  middle   big  */
 		gpu_dvfs_table = <
@@ -13907,7 +13907,7 @@
 		gpu_min_clock = <156000>;
 		gpu_dvfs_start_clock = <260000>;
 		gpu_dvfs_bl_config_clock = <156000>;
-		gpu_default_voltage = <800000>;
+		gpu_default_voltage = <897000>;
 		gpu_cold_minimum_vol = <0>;
 		gpu_voltage_offset_margin = <37500>;
 		gpu_tmu_control = <1>;
@@ -13920,8 +13920,8 @@
 		gpu_early_clk_gating = <0>;
 		gpu_dvs = <0>;
 		gpu_inter_frame_pm = <1>;
-		gpu_inter_frame_dynamic_util = <50>;
-		gpu_inter_frame_dynamic_freq = <702000>;
+		gpu_inter_frame_dynamic_util = <45>;
+		gpu_inter_frame_dynamic_freq = <897000>;
 		gpu_perf_gathering = <0>;
 		gpu_runtime_pm_delay_time = <50>;
 		gpu_dvfs_polling_time = <30>;
