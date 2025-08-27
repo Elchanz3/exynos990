@@ -141,66 +141,101 @@ err_list_clock_allocation:
 
 static int ect_parse_dvfs_header(void *address, struct ect_info *info)
 {
-	int ret = 0;
-	int i;
-	char *domain_name;
-	unsigned int length, offset;
-	struct ect_dvfs_header *ect_dvfs_header;
-	struct ect_dvfs_domain *ect_dvfs_domain;
-	void *address_dvfs_header = address;
+    int ret = 0;
+    int i, j;
+    char *domain_name;
+    unsigned int length, offset;
+    struct ect_dvfs_header *ect_dvfs_header;
+    struct ect_dvfs_domain *ect_dvfs_domain;
+    void *address_dvfs_header = address;
+    u32 *level_list;
 
-	if (address == NULL)
-		return -EINVAL;
+    if (address == NULL)
+        return -EINVAL;
 
-	ect_dvfs_header = kzalloc(sizeof(struct ect_dvfs_header), GFP_KERNEL);
-	if (ect_dvfs_header == NULL)
-		return -ENOMEM;
+    ect_dvfs_header = kzalloc(sizeof(struct ect_dvfs_header), GFP_KERNEL);
+    if (ect_dvfs_header == NULL)
+        return -ENOMEM;
 
-	ect_parse_integer(&address, &ect_dvfs_header->parser_version);
-	ect_parse_integer(&address, &ect_dvfs_header->version);
-	ect_parse_integer(&address, &ect_dvfs_header->num_of_domain);
+    ect_parse_integer(&address, &ect_dvfs_header->parser_version);
+    ect_parse_integer(&address, &ect_dvfs_header->version);
+    ect_parse_integer(&address, &ect_dvfs_header->num_of_domain);
 
-	ect_dvfs_header->domain_list = kzalloc(sizeof(struct ect_dvfs_domain) * ect_dvfs_header->num_of_domain,
-						GFP_KERNEL);
-	if (ect_dvfs_header->domain_list == NULL) {
-		ret = -EINVAL;
-		goto err_domain_list_allocation;
-	}
+    ect_dvfs_header->domain_list = kzalloc(sizeof(struct ect_dvfs_domain) * ect_dvfs_header->num_of_domain,
+                        GFP_KERNEL);
+    if (ect_dvfs_header->domain_list == NULL) {
+        ret = -EINVAL;
+        goto err_domain_list_allocation;
+    }
 
-	for (i = 0; i < ect_dvfs_header->num_of_domain; ++i) {
-		if (ect_parse_string(&address, &domain_name, &length)) {
-			ret = -EINVAL;
-			goto err_parse_string;
-		}
+    for (i = 0; i < ect_dvfs_header->num_of_domain; ++i) {
+        if (ect_parse_string(&address, &domain_name, &length)) {
+            ret = -EINVAL;
+            goto err_parse_string;
+        }
 
-		ect_parse_integer(&address, &offset);
+        ect_parse_integer(&address, &offset);
 
-		ect_dvfs_domain = &ect_dvfs_header->domain_list[i];
-		ect_dvfs_domain->domain_name = domain_name;
-		ect_dvfs_domain->domain_offset = offset;
-	}
+        ect_dvfs_domain = &ect_dvfs_header->domain_list[i];
+        ect_dvfs_domain->domain_name = domain_name;
+        ect_dvfs_domain->domain_offset = offset;
+    }
 
-	for (i = 0; i < ect_dvfs_header->num_of_domain; ++i) {
-		ect_dvfs_domain = &ect_dvfs_header->domain_list[i];
+    for (i = 0; i < ect_dvfs_header->num_of_domain; ++i) {
+        ect_dvfs_domain = &ect_dvfs_header->domain_list[i];
 
-		if (ect_parse_dvfs_domain(ect_dvfs_header->parser_version,
-						address_dvfs_header + ect_dvfs_domain->domain_offset,
-						ect_dvfs_domain)) {
-			ret = -EINVAL;
-			goto err_parse_domain;
-		}
-	}
+        if (ect_parse_dvfs_domain(ect_dvfs_header->parser_version,
+                    address_dvfs_header + ect_dvfs_domain->domain_offset,
+                    ect_dvfs_domain)) {
+            ret = -EINVAL;
+            goto err_parse_domain;
+        }
 
-	info->block_handle = ect_dvfs_header;
+        level_list = (u32 *)ect_dvfs_domain->list_level;
 
-	return 0;
+        if (strcmp(ect_dvfs_domain->domain_name, "CPUCL0") == 0) {
+            for (j = 0; j < ect_dvfs_domain->num_of_level; j++) {
+                if (level_list[j] == 2106000) {
+                    level_list[j] = 2314000;
+                    break;
+                }
+            }
+        }
+        else if (strcmp(ect_dvfs_domain->domain_name, "CPUCL1") == 0) {
+            for (j = 0; j < ect_dvfs_domain->num_of_level; j++) {
+                if (level_list[j] == 2600000) {
+                    level_list[j] = 2962000;
+                    break;
+                }
+            }
+        }
+        else if (strcmp(ect_dvfs_domain->domain_name, "CPUCL2") == 0) {
+            for (j = 0; j < ect_dvfs_domain->num_of_level; j++) {
+                if (level_list[j] == 3016000) {
+                    level_list[j] = 3360000;
+                    break;
+                }
+            }
+        }
+        else if (strcmp(ect_dvfs_domain->domain_name, "G3D") == 0) {
+            for (j = 0; j < ect_dvfs_domain->num_of_level; j++) {
+                if (level_list[j] == 897000) {
+                    level_list[j] = 932000;
+                    break;
+                }
+            }
+        }
+    }
+
+    info->block_handle = ect_dvfs_header;
+    return 0;
 
 err_parse_domain:
 err_parse_string:
-	kfree(ect_dvfs_header->domain_list);
+    kfree(ect_dvfs_header->domain_list);
 err_domain_list_allocation:
-	kfree(ect_dvfs_header);
-	return ret;
+    kfree(ect_dvfs_header);
+    return ret;
 }
 
 static int ect_parse_pll(int parser_version, void *address, struct ect_pll *ect_pll)
@@ -215,66 +250,102 @@ static int ect_parse_pll(int parser_version, void *address, struct ect_pll *ect_
 
 static int ect_parse_pll_header(void *address, struct ect_info *info)
 {
-	int ret = 0;
-	int i;
-	char *pll_name;
-	unsigned int length, offset;
-	struct ect_pll_header *ect_pll_header;
-	struct ect_pll *ect_pll;
-	void *address_pll_header = address;
+    int ret = 0;
+    int i, j;
+    char *pll_name;
+    unsigned int length, offset;
+    struct ect_pll_header *ect_pll_header;
+    struct ect_pll *ect_pll;
+    void *address_pll_header = address;
+    u32 *freq_list;
 
-	if (address == NULL)
-		return -EINVAL;
+    if (address == NULL)
+        return -EINVAL;
 
-	ect_pll_header = kzalloc(sizeof(struct ect_pll_header), GFP_KERNEL);
-	if (ect_pll_header == NULL)
-		return -ENOMEM;
+    ect_pll_header = kzalloc(sizeof(struct ect_pll_header), GFP_KERNEL);
+    if (ect_pll_header == NULL)
+        return -ENOMEM;
 
-	ect_parse_integer(&address, &ect_pll_header->parser_version);
-	ect_parse_integer(&address, &ect_pll_header->version);
-	ect_parse_integer(&address, &ect_pll_header->num_of_pll);
+    ect_parse_integer(&address, &ect_pll_header->parser_version);
+    ect_parse_integer(&address, &ect_pll_header->version);
+    ect_parse_integer(&address, &ect_pll_header->num_of_pll);
 
-	ect_pll_header->pll_list = kzalloc(sizeof(struct ect_pll) * ect_pll_header->num_of_pll,
-							GFP_KERNEL);
-	if (ect_pll_header->pll_list == NULL) {
-		ret = -ENOMEM;
-		goto err_pll_list_allocation;
-	}
+    ect_pll_header->pll_list = kzalloc(sizeof(struct ect_pll) * ect_pll_header->num_of_pll,
+                        GFP_KERNEL);
+    if (ect_pll_header->pll_list == NULL) {
+        ret = -ENOMEM;
+        goto err_pll_list_allocation;
+    }
 
-	for (i = 0; i < ect_pll_header->num_of_pll; ++i) {
+    for (i = 0; i < ect_pll_header->num_of_pll; ++i) {
+        if (ect_parse_string(&address, &pll_name, &length)) {
+            ret = -EINVAL;
+            goto err_parse_string;
+        }
+        ect_parse_integer(&address, &offset);
 
-		if (ect_parse_string(&address, &pll_name, &length)) {
-			ret = -EINVAL;
-			goto err_parse_string;
-		}
+        ect_pll = &ect_pll_header->pll_list[i];
+        ect_pll->pll_name = pll_name;
+        ect_pll->pll_offset = offset;
+    }
 
-		ect_parse_integer(&address, &offset);
+    for (i = 0; i < ect_pll_header->num_of_pll; ++i) {
+        ect_pll = &ect_pll_header->pll_list[i];
 
-		ect_pll = &ect_pll_header->pll_list[i];
-		ect_pll->pll_name = pll_name;
-		ect_pll->pll_offset = offset;
-	}
+        if (ect_parse_pll(ect_pll_header->parser_version,
+                    address_pll_header + ect_pll->pll_offset, ect_pll)) {
+            ret = -EINVAL;
+            goto err_parse_pll;
+        }
 
-	for (i = 0; i < ect_pll_header->num_of_pll; ++i) {
-		ect_pll = &ect_pll_header->pll_list[i];
+        freq_list = (u32 *)ect_pll->frequency_list;
 
-		if (ect_parse_pll(ect_pll_header->parser_version,
-					address_pll_header + ect_pll->pll_offset, ect_pll)) {
-			ret = -EINVAL;
-			goto err_parse_pll;
-		}
-	}
+        if (strcmp(ect_pll->pll_name, "PLL_CPUCL0") == 0) {
+            for (j = 0; j < ect_pll->num_of_frequency * 5; j += 5) {
+                if (freq_list[j] == 2106000000) {
+                    freq_list[j] = 2314000000;
+                    break;
+                }
+            }
+        }
+       
+        else if (strcmp(ect_pll->pll_name, "PLL_CPUCL1") == 0) {
+            for (j = 0; j < ect_pll->num_of_frequency * 5; j += 5) {
+                if (freq_list[j] == 2600000000) {
+                    freq_list[j] = 2962000000;
+                    break;
+                }
+            }
+        }
+        
+        else if (strcmp(ect_pll->pll_name, "PLL_CPUCL2") == 0) {
+            for (j = 0; j < ect_pll->num_of_frequency * 5; j += 5) {
+                if (freq_list[j] == 3016000000) {
+                    freq_list[j] = 3360000000;
+                    break;
+                }
+            }
+        }
+        
+        else if (strcmp(ect_pll->pll_name, "PLL_G3D") == 0) {
+            for (j = 0; j < ect_pll->num_of_frequency * 5; j += 5) {
+                if (freq_list[j] == 897000000) {
+                    freq_list[j] = 932000000;
+                    break;
+                }
+            }
+        }
+    }
 
-	info->block_handle = ect_pll_header;
-
-	return 0;
+    info->block_handle = ect_pll_header;
+    return 0;
 
 err_parse_pll:
 err_parse_string:
-	kfree(ect_pll_header->pll_list);
+    kfree(ect_pll_header->pll_list);
 err_pll_list_allocation:
-	kfree(ect_pll_header);
-	return ret;
+    kfree(ect_pll_header);
+    return ret;
 }
 
 static int ect_parse_voltage_table(int parser_version, void **address, struct ect_voltage_domain *domain, struct ect_voltage_table *table)
@@ -355,66 +426,100 @@ err_table_list_allocation:
 
 static int ect_parse_voltage_header(void *address, struct ect_info *info)
 {
-	int ret = 0;
-	int i;
-	char *domain_name;
-	unsigned int length, offset;
-	struct ect_voltage_header *ect_voltage_header;
-	struct ect_voltage_domain *ect_voltage_domain;
-	void *address_voltage_header = address;
+    int ret = 0;
+    int i, j;
+    char *domain_name;
+    unsigned int length, offset;
+    struct ect_voltage_header *ect_voltage_header;
+    struct ect_voltage_domain *domain;
+    void *address_voltage_header = address;
 
-	if (address == NULL)
-		return -EINVAL;
+    if (address == NULL)
+        return -EINVAL;
 
-	ect_voltage_header = kzalloc(sizeof(struct ect_voltage_header), GFP_KERNEL);
-	if (ect_voltage_header == NULL)
-		return -EINVAL;
+    ect_voltage_header = kzalloc(sizeof(struct ect_voltage_header), GFP_KERNEL);
+    if (ect_voltage_header == NULL)
+        return -ENOMEM;
 
-	ect_parse_integer(&address, &ect_voltage_header->parser_version);
-	ect_parse_integer(&address, &ect_voltage_header->version);
-	ect_parse_integer(&address, &ect_voltage_header->num_of_domain);
+    ect_parse_integer(&address, &ect_voltage_header->parser_version);
+    ect_parse_integer(&address, &ect_voltage_header->version);
+    ect_parse_integer(&address, &ect_voltage_header->num_of_domain);
 
-	ect_voltage_header->domain_list = kzalloc(sizeof(struct ect_voltage_domain) * ect_voltage_header->num_of_domain,
-							GFP_KERNEL);
-	if (ect_voltage_header->domain_list == NULL) {
-		ret = -ENOMEM;
-		goto err_domain_list_allocation;
-	}
+    ect_voltage_header->domain_list = kzalloc(sizeof(struct ect_voltage_domain) * ect_voltage_header->num_of_domain,
+                        GFP_KERNEL);
+    if (ect_voltage_header->domain_list == NULL) {
+        ret = -ENOMEM;
+        goto err_domain_list_allocation;
+    }
 
-	for (i = 0; i < ect_voltage_header->num_of_domain; ++i) {
-		if (ect_parse_string(&address, &domain_name, &length)) {
-			ret = -EINVAL;
-			goto err_parse_string;
-		}
+    for (i = 0; i < ect_voltage_header->num_of_domain; ++i) {
+        if (ect_parse_string(&address, &domain_name, &length)) {
+            ret = -EINVAL;
+            goto err_parse_string;
+        }
 
-		ect_parse_integer(&address, &offset);
+        ect_parse_integer(&address, &offset);
 
-		ect_voltage_domain = &ect_voltage_header->domain_list[i];
-		ect_voltage_domain->domain_name = domain_name;
-		ect_voltage_domain->domain_offset = offset;
-	}
+        domain = &ect_voltage_header->domain_list[i];
+        domain->domain_name = domain_name;
+        domain->domain_offset = offset;
+    }
 
-	for (i = 0; i < ect_voltage_header->num_of_domain; ++i) {
-		ect_voltage_domain = &ect_voltage_header->domain_list[i];
+    for (i = 0; i < ect_voltage_header->num_of_domain; ++i) {
+        domain = &ect_voltage_header->domain_list[i];
 
-		if (ect_parse_voltage_domain(ect_voltage_header->parser_version,
-						address_voltage_header + ect_voltage_domain->domain_offset,
-						ect_voltage_domain)) {
-			ret = -EINVAL;
-			goto err_parse_voltage_domain;
-		}
-	}
+        if (ect_parse_voltage_domain(ect_voltage_header->parser_version,
+                    address_voltage_header + domain->domain_offset, domain)) {
+            ret = -EINVAL;
+            goto err_parse_domain;
+        }
 
-	info->block_handle = ect_voltage_header;
+        if (strcmp(domain->domain_name, "CPUCL0") == 0) {
+            for (j = 0; j < domain->num_of_level; j++) {
+                if (domain->level_list[j] == 2106) {
+                    domain->level_list[j] = 2314;
+                    break;
+                }
+            }
+        }
 
-	return 0;
+        else if (strcmp(domain->domain_name, "CPUCL1") == 0) {
+            for (j = 0; j < domain->num_of_level; j++) {
+                if (domain->level_list[j] == 2600) {
+                    domain->level_list[j] = 2962;
+                    break;
+                }
+            }
+        }
 
-err_parse_voltage_domain:
+        else if (strcmp(domain->domain_name, "CPUCL2") == 0) {
+            for (j = 0; j < domain->num_of_level; j++) {
+                if (domain->level_list[j] == 3016) {
+                    domain->level_list[j] = 3360;
+                    break;
+                }
+            }
+        }
+
+        else if (strcmp(domain->domain_name, "G3D") == 0) {
+            for (j = 0; j < domain->num_of_level; j++) {
+                if (domain->level_list[j] == 897) {
+                    domain->level_list[j] = 932;
+                    break;
+                }
+            }
+        }
+    }
+
+    info->block_handle = ect_voltage_header;
+    return 0;
+
+err_parse_domain:
 err_parse_string:
-	kfree(ect_voltage_header->domain_list);
+    kfree(ect_voltage_header->domain_list);
 err_domain_list_allocation:
-	kfree(ect_voltage_header);
-	return ret;
+    kfree(ect_voltage_header);
+    return ret;
 }
 
 static int ect_parse_rcc_table(int parser_version, void **address, struct ect_rcc_domain *domain, struct ect_rcc_table *table)
@@ -869,7 +974,7 @@ err_domain_list_allocation:
 	return ret;
 }
 
-#define GLOBAL_MHZ 3016
+#define GLOBAL_MHZ 3360
 #define GPU_MHZ 932
 
 static int ect_parse_gen_param_table(int parser_version, void *address, struct ect_gen_param_table *size)
