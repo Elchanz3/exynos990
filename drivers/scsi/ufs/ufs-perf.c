@@ -269,7 +269,7 @@ int ufs_perf_populate_dt(void *data, struct device_node *np)
 
 	/* perf mode enable : 1, disable 0 */
 	if (of_property_read_u32(np, "perf-mode", &perf->mode)) {
-		perf->mode = 0;
+		perf->mode = 1;
 		ret = -1;
 		goto out;
 	}
