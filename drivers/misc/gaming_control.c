@@ -29,9 +29,9 @@
 #include <linux/gaming_control.h>
 #include <soc/samsung/cal-if.h>
 #include <soc/samsung/exynos-cpu_hotplug.h>
-#include <dt-bindings/clock/exynos9810.h>
-#include "../soc/samsung/cal-if/exynos9810/cmucal-vclk.h"
-#include "../soc/samsung/cal-if/exynos9810/cmucal-node.h"
+#include <dt-bindings/clock/exynos9830.h>
+#include "../soc/samsung/cal-if/exynos9830/cmucal-vclk.h"
+#include "../soc/samsung/cal-if/exynos9830/cmucal-node.h"
 
 #define DEFAULT_CPU_LIMIT 1794000
 #define TEMP_EMULATION 20000
