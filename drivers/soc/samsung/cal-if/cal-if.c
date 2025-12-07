@@ -25,6 +25,8 @@
 #include "pmucal_rae.h"
 #include "pmucal_powermode.h"
 
+#include <linux/gaming_control.h>
+
 #include "../exynos-hiu.h"
 
 static DEFINE_SPINLOCK(pmucal_cpu_lock);
@@ -79,6 +81,10 @@ int cal_dfs_set_rate(unsigned int id, unsigned long rate)
 int cal_dfs_set_rate_switch(unsigned int id, unsigned long switch_rate)
 {
 	int ret = 0;
+	
+	unsigned long temp = cal_dfs_check_gaming_mode(id);
+	if (temp)
+		rate = temp;
 
 	ret = vclk_set_rate_switch(id, switch_rate);
 
@@ -126,7 +132,12 @@ int cal_dfs_get_rate_table(unsigned int id, unsigned long *table)
 
 int cal_clk_setrate(unsigned int id, unsigned long rate)
 {
+	unsigned long temp = cal_dfs_check_gaming_mode(id);
+
 	int ret = -EINVAL;
+	
+	if (temp)
+		rate = temp;
 
 	ret = vclk_set_rate(id, rate);
 
@@ -136,6 +147,14 @@ int cal_clk_setrate(unsigned int id, unsigned long rate)
 unsigned long cal_clk_getrate(unsigned int id)
 {
 	unsigned long ret = 0;
+	
+	ret = cal_dfs_check_gaming_mode(id);
+	if (ret)
+		return ret;
+	
+	ret = cal_dfs_check_gaming_mode(id);
+	if (ret)
+		return ret;
 
 	ret = vclk_recalc_rate(id);
 

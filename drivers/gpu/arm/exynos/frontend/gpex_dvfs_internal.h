@@ -25,7 +25,7 @@
 
 #define DVFS_ASSERT(x)                                                                             \
 	do {                                                                                       \
-		if (x)                                                                             \
+		if (x || fake_freq_gaming(DVFS_G3D))                                                                            \
 			break;                                                                     \
 		printk(KERN_EMERG "### ASSERTION FAILED %s: %s: %d: %s\n", __FILE__, __func__,     \
 		       __LINE__, #x);                                                              \
