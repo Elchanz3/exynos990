@@ -28,23 +28,25 @@
 #include <linux/regulator/consumer.h>
 #include <linux/gaming_control.h>
 #include <soc/samsung/cal-if.h>
-#include <soc/samsung/exynos-cpu_hotplug.h>
+#include <soc/samsung/exynos-cpuhp.h>
 #include <dt-bindings/clock/exynos9830.h>
 #include "../soc/samsung/cal-if/exynos9830/cmucal-vclk.h"
 #include "../soc/samsung/cal-if/exynos9830/cmucal-node.h"
 
-#define DEFAULT_CPU_LIMIT 1794000
+#define DEFAULT_CPU_LIMIT 2730000
 #define TEMP_EMULATION 20000
 #define STEP_UV			(6250)
 
 static struct delayed_work customs_delayed_work;
 
-static struct regulator *little_regulator, *big_regulator, *g3d_regulator;
+static struct regulator *little_regulator, *mid_regulator, *big_regulator, *g3d_regulator;
 
 extern unsigned long arg_cpu_max_c1;
 extern unsigned long arg_cpu_min_c1;
 extern unsigned long arg_cpu_max_c2;
 extern unsigned long arg_cpu_min_c2;
+extern unsigned long arg_cpu_max_c3;
+extern unsigned long arg_cpu_min_c3;
 extern unsigned long arg_gpu_min;
 extern unsigned long arg_gpu_max;
 extern int exynos_cpufreq_update_volt_table(void);
@@ -55,18 +57,22 @@ static struct pm_qos_request gaming_control_min_int_qos;
 static struct pm_qos_request gaming_control_min_mif_qos;
 static struct pm_qos_request gaming_control_min_big_qos;
 static struct pm_qos_request gaming_control_max_big_qos;
+static struct pm_qos_request gaming_control_min_mid_qos;
+static struct pm_qos_request gaming_control_max_mid_qos;
 static struct pm_qos_request gaming_control_min_little_qos;
 static struct pm_qos_request gaming_control_max_little_qos;
-static unsigned int min_int_freq = 534000;
-static unsigned int min_mif_freq = 1794000;
-static unsigned int min_little_freq = 1456000;
-static unsigned int max_little_freq = 2002000;
-static unsigned int min_big_freq = 1469000;
-static unsigned int max_big_freq = 2886000;
-static unsigned int min_gpu_freq = 598000;
-static unsigned int max_gpu_freq = 598000;
-static unsigned int custom_little_freq, custom_little_voltage, custom_big_freq, custom_big_voltage, custom_gpu_freq, custom_gpu_voltage = 0;
-static unsigned int back_little_freq, back_little_voltage, back_big_freq, back_big_voltage, back_gpu_freq, back_gpu_voltage = 0;
+static unsigned int min_int_freq = 533000;
+static unsigned int min_mif_freq = 2730000;
+static unsigned int min_little_freq = 182000;
+static unsigned int max_little_freq = 2106000;
+static unsigned int min_mid_freq = 377000;
+static unsigned int max_mid_freq = 2600000;
+static unsigned int min_big_freq = 546000;
+static unsigned int max_big_freq = 3016000;
+static unsigned int min_gpu_freq = 156000;
+static unsigned int max_gpu_freq = 897000;
+static unsigned int custom_little_freq, custom_little_voltage, custom_mid_freq, custom_mid_voltage, custom_big_freq, custom_big_voltage, custom_gpu_freq, custom_gpu_voltage = 0;
+static unsigned int back_little_freq, back_little_voltage, back_mid_freq, back_mid_voltage, back_big_freq, back_big_voltage, back_gpu_freq, back_gpu_voltage = 0;
 static int nr_running_games = 0;
 static bool always_on = 0;
 static bool battery_idle = 0;
@@ -83,6 +89,7 @@ pid_t games_pid[NUM_SUPPORTED_RUNNING_GAMES] = {
 static inline void set_custom_gaming_mode(void)
 {
 	unsigned int little_freq = max_little_freq;
+	unsigned int mid_freq = max_mid_freq;
 	unsigned int big_freq = max_big_freq;
 	unsigned int gpu_freq = max_gpu_freq;
 
@@ -94,24 +101,39 @@ static inline void set_custom_gaming_mode(void)
 		else if (custom_little_freq >= arg_cpu_max_c1)
 			little_freq = arg_cpu_max_c1;
 
-		__cal_dfs_set_rate(ACPM_DVFS_CPUCL0, gaming_mode ? custom_little_freq : little_freq);
-		__cal_dfs_set_rate(VCLK_CLUSTER0, (gaming_mode ? custom_little_freq : little_freq) * 1000);
-		__cal_dfs_set_rate(PLL_CPUCL0, (gaming_mode ? custom_little_freq : little_freq) * 1000);
+		cal_dfs_set_rate(ACPM_DVFS_CPUCL0, gaming_mode ? custom_little_freq : little_freq);
+		cal_dfs_set_rate(VCLK_BLK_CPUCL0, (gaming_mode ? custom_little_freq : little_freq) * 1000);
+		cal_dfs_set_rate(PLL_CPUCL0, (gaming_mode ? custom_little_freq : little_freq) * 1000);
 	}
 
-	if (custom_big_freq) {
-		if (custom_big_freq <= arg_cpu_min_c2) {
-			big_freq = arg_cpu_min_c2;
-		} else if (custom_big_freq >= arg_cpu_max_c2) {
+	if (custom_mid_freq) {
+		if (custom_mid_freq <= arg_cpu_min_c2) {
+			mid_freq = arg_cpu_min_c2;
+		} else if (custom_mid_freq >= arg_cpu_max_c2) {
 			if (gaming_mode || DEFAULT_CPU_LIMIT > arg_cpu_max_c2)
-				big_freq = arg_cpu_max_c2;
+				mid_freq = arg_cpu_max_c2;
+			else
+				mid_freq = DEFAULT_CPU_LIMIT;
+		}
+
+		cal_dfs_set_rate(ACPM_DVFS_CPUCL1, gaming_mode ? custom_mid_freq : mid_freq);
+		cal_dfs_set_rate(VCLK_BLK_CPUCL1, (gaming_mode ? custom_mid_freq : mid_freq) * 1000);
+		cal_dfs_set_rate(PLL_CPUCL1, (gaming_mode ? custom_mid_freq : mid_freq) * 1000);
+	}
+	
+	if (custom_big_freq) {
+		if (custom_big_freq <= arg_cpu_min_c3) {
+			big_freq = arg_cpu_min_c3;
+		} else if (custom_big_freq >= arg_cpu_max_c3) {
+			if (gaming_mode || DEFAULT_CPU_LIMIT > arg_cpu_max_c3)
+				big_freq = arg_cpu_max_c3;
 			else
 				big_freq = DEFAULT_CPU_LIMIT;
 		}
 
-		__cal_dfs_set_rate(ACPM_DVFS_CPUCL1, gaming_mode ? custom_big_freq : big_freq);
-		__cal_dfs_set_rate(VCLK_CLUSTER1, (gaming_mode ? custom_big_freq : big_freq) * 1000);
-		__cal_dfs_set_rate(PLL_CPUCL1, (gaming_mode ? custom_big_freq : big_freq) * 1000);
+		cal_dfs_set_rate(ACPM_DVFS_CPUCL2, gaming_mode ? custom_big_freq : big_freq);
+		cal_dfs_set_rate(VCLK_BLK_CPUCL2, (gaming_mode ? custom_big_freq : big_freq) * 1000);
+		cal_dfs_set_rate(PLL_CPUCL2, (gaming_mode ? custom_big_freq : big_freq) * 1000);
 	}
 
 	if (custom_gpu_freq) {
@@ -120,29 +142,30 @@ static inline void set_custom_gaming_mode(void)
 		else if (custom_gpu_freq >= arg_gpu_max)
 			gpu_freq = arg_gpu_max;
 
-		__cal_dfs_set_rate(ACPM_DVFS_G3D, gaming_mode ? custom_gpu_freq : gpu_freq);
-		__cal_dfs_set_rate(VCLK_GPU, (gaming_mode ? custom_gpu_freq : gpu_freq) * 1000);
-		__cal_dfs_set_rate(PLL_G3D, (gaming_mode ? custom_gpu_freq : gpu_freq) * 1000);
+		cal_dfs_set_rate(ACPM_DVFS_G3D, gaming_mode ? custom_gpu_freq : gpu_freq);
+		cal_dfs_set_rate(VCLK_BLK_G3D, (gaming_mode ? custom_gpu_freq : gpu_freq) * 1000);
+		cal_dfs_set_rate(PLL_G3D, (gaming_mode ? custom_gpu_freq : gpu_freq) * 1000);
 	}
 }
 
 static void set_custom_gaming_mode_handler(struct work_struct *work)
 {
-	if (gaming_mode && little_regulator && big_regulator && g3d_regulator) {
+	if (gaming_mode && little_regulator && mid_regulator && big_regulator && g3d_regulator) {
 		if ((!custom_little_voltage || abs(custom_little_voltage - regulator_get_voltage(little_regulator)) < STEP_UV)
+			&& (!custom_mid_voltage || abs(custom_mid_voltage - regulator_get_voltage(mid_regulator)) < STEP_UV)
 			&& (!custom_big_voltage || abs(custom_big_voltage - regulator_get_voltage(big_regulator)) < STEP_UV)
 			&& (!custom_gpu_voltage || abs(custom_gpu_voltage - regulator_get_voltage(g3d_regulator)) < STEP_UV))
 			set_custom_gaming_mode();
 		else
 			queue_delayed_work(system_power_efficient_wq, &customs_delayed_work, msecs_to_jiffies(1000));
-	} else if (gaming_mode_initialized || little_regulator == NULL || big_regulator == NULL || g3d_regulator == NULL) {
+	} else if (gaming_mode_initialized || little_regulator == NULL || mid_regulator == NULL || big_regulator == NULL || g3d_regulator == NULL) {
 		set_custom_gaming_mode();
 	}
 }
 
 static inline void set_gaming_mode(bool mode, bool force)
 {
-	unsigned int little_max, little_min, big_max, big_min, gpu_max, gpu_min;
+	unsigned int little_max, little_min, mid_max, mid_min, big_max, big_min, gpu_max, gpu_min;
 
 	if (always_on)
 		mode = 1;
@@ -159,6 +182,8 @@ static inline void set_gaming_mode(bool mode, bool force)
 
 	little_max = max_little_freq;
 	little_min = min_little_freq;
+	mid_max = max_mid_freq;
+	mid_min = min_mid_freq;
 	big_max = max_big_freq;
 	big_min = min_big_freq;
 	gpu_max = max_gpu_freq;
@@ -182,12 +207,30 @@ static inline void set_gaming_mode(bool mode, bool force)
 		back_little_freq = back_little_voltage = 0;
 	}
 
+	if (custom_mid_freq) {
+		if (custom_mid_freq <= arg_cpu_min_c2)
+			mid_max = mid_min = arg_cpu_min_c2;
+		else if (custom_mid_freq >= arg_cpu_max_c2)
+			mid_max = mid_min = arg_cpu_max_c2;
+	}
+
+	if (!back_mid_freq)
+			back_mid_freq = mid_max;
+
+	if (custom_mid_voltage && mode && !back_mid_voltage) {
+		back_mid_voltage = fvmap_read(DVFS_CPUCL1, READ_VOLT, back_mid_freq);
+		fvmap_patch(DVFS_CPUCL1, back_mid_freq, custom_mid_voltage);
+	} else if (!mode && back_mid_voltage) {
+		fvmap_patch(DVFS_CPUCL1, back_mid_freq, back_mid_voltage);
+		back_mid_freq = back_mid_voltage = 0;
+	}
+
 	if (custom_big_freq) {
-		if (custom_big_freq <= arg_cpu_min_c2) {
-			big_max = big_min = arg_cpu_min_c2;
-		} else if (custom_big_freq >= arg_cpu_max_c2) {
-			if (mode || DEFAULT_CPU_LIMIT > arg_cpu_max_c2)
-				big_max = big_min = arg_cpu_max_c2;
+		if (custom_big_freq <= arg_cpu_min_c3) {
+			big_max = big_min = arg_cpu_min_c3;
+		} else if (custom_big_freq >= arg_cpu_max_c3) {
+			if (mode || DEFAULT_CPU_LIMIT > arg_cpu_max_c3)
+				big_max = big_min = arg_cpu_max_c3;
 			else
 				big_max = big_min = DEFAULT_CPU_LIMIT;
 		}
@@ -197,10 +240,10 @@ static inline void set_gaming_mode(bool mode, bool force)
 			back_big_freq = big_max;
 
 	if (custom_big_voltage && mode && !back_big_voltage) {
-		back_big_voltage = fvmap_read(DVFS_CPUCL1, READ_VOLT, back_big_freq);
-		fvmap_patch(DVFS_CPUCL1, back_big_freq, custom_big_voltage);
+		back_big_voltage = fvmap_read(DVFS_CPUCL2, READ_VOLT, back_big_freq);
+		fvmap_patch(DVFS_CPUCL2, back_big_freq, custom_big_voltage);
 	} else if (!mode && back_big_voltage) {
-		fvmap_patch(DVFS_CPUCL1, back_big_freq, back_big_voltage);
+		fvmap_patch(DVFS_CPUCL2, back_big_freq, back_big_voltage);
 		back_big_freq = back_big_voltage = 0;
 	}
 
@@ -230,8 +273,10 @@ static inline void set_gaming_mode(bool mode, bool force)
 	pm_qos_update_request(&gaming_control_min_mif_qos, mode && min_mif_freq ? min_mif_freq : PM_QOS_BUS_THROUGHPUT_DEFAULT_VALUE);
 	pm_qos_update_request(&gaming_control_min_little_qos, mode && little_min ? little_min : PM_QOS_CLUSTER0_FREQ_MIN_DEFAULT_VALUE);
 	pm_qos_update_request(&gaming_control_max_little_qos, mode && little_max ? little_max : PM_QOS_CLUSTER0_FREQ_MAX_DEFAULT_VALUE);
-	pm_qos_update_request(&gaming_control_min_big_qos, mode && big_min ? big_min : PM_QOS_CLUSTER1_FREQ_MIN_DEFAULT_VALUE);
-	pm_qos_update_request(&gaming_control_max_big_qos, mode && big_max ? big_max : PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE);
+	pm_qos_update_request(&gaming_control_min_mid_qos, mode && mid_min ? mid_min : PM_QOS_CLUSTER1_FREQ_MIN_DEFAULT_VALUE);
+	pm_qos_update_request(&gaming_control_max_mid_qos, mode && mid_max ? mid_max : PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE);
+	pm_qos_update_request(&gaming_control_min_big_qos, mode && big_min ? big_min : PM_QOS_CLUSTER2_FREQ_MIN_DEFAULT_VALUE);
+	pm_qos_update_request(&gaming_control_max_big_qos, mode && big_max ? big_max : PM_QOS_CLUSTER2_FREQ_MAX_DEFAULT_VALUE);
 
 	gpu_custom_max_clock(mode ? gpu_max : 0);
 	gpu_custom_min_clock(mode ? gpu_min : 0);
@@ -251,8 +296,12 @@ unsigned long cal_dfs_check_gaming_mode(unsigned int id) {
 	case ACPM_DVFS_CPUCL0:
 		ret = custom_little_freq;
 		break;
-	/* BIG */
+	/* MID */
 	case ACPM_DVFS_CPUCL1:
+		ret = custom_mid_freq;
+		break;
+	/* BIG */
+	case ACPM_DVFS_CPUCL2:
 		ret = custom_big_freq;
 		break;
 	/* GPU */
@@ -273,17 +322,18 @@ int fake_freq_gaming(int id) {
 		return ret;
 
 	switch (id) {
-	/* LITTLE */
 	case ACPM_DVFS_CPUCL0:
 	case DVFS_CPUCL0:
 		ret = back_little_freq;
 		break;
-	/* BIG */
 	case ACPM_DVFS_CPUCL1:
 	case DVFS_CPUCL1:
+		ret = back_mid_freq;
+		break;
+	case ACPM_DVFS_CPUCL2:
+	case DVFS_CPUCL2:
 		ret = back_big_freq;
 		break;
-	/* GPU */
 	case ACPM_DVFS_G3D:
 	case DVFS_G3D:
 		ret = back_gpu_freq;
@@ -493,6 +543,10 @@ attr_value(min_int_freq);
 attr_value(min_mif_freq);
 attr_value(min_little_freq);
 attr_value(max_little_freq);
+attr_value(min_mid_freq);
+attr_value(max_mid_freq);
+attr_value(custom_mid_freq);
+attr_value(custom_mid_voltage);
 attr_value(min_big_freq);
 attr_value(max_big_freq);
 attr_value(min_gpu_freq);
@@ -548,12 +602,16 @@ static struct attribute *gaming_control_attributes[] = {
 	&min_mif_freq_attribute.attr,
 	&min_little_freq_attribute.attr,
 	&max_little_freq_attribute.attr,
+	&min_mid_freq_attribute.attr,
+	&max_mid_freq_attribute.attr,
 	&min_big_freq_attribute.attr,
 	&max_big_freq_attribute.attr,
 	&min_gpu_freq_attribute.attr,
 	&max_gpu_freq_attribute.attr,
 	&custom_little_freq_attribute.attr,
 	&custom_little_voltage_attribute.attr,
+	&custom_mid_freq_attribute.attr,
+	&custom_mid_voltage_attribute.attr,
 	&custom_big_freq_attribute.attr,
 	&custom_big_voltage_attribute.attr,
 	&custom_gpu_freq_attribute.attr,
@@ -575,7 +633,11 @@ static int __init gaming_control_init(void)
 	if (IS_ERR(little_regulator))
 		little_regulator = NULL;
 
-	big_regulator = regulator_get(NULL, "vdd_cpucl1");
+	mid_regulator = regulator_get(NULL, "vdd_cpucl1");
+	if (IS_ERR(mid_regulator))
+		mid_regulator = NULL;
+
+	big_regulator = regulator_get(NULL, "vdd_cpucl2");
 	if (IS_ERR(big_regulator))
 		big_regulator = NULL;
 
@@ -589,8 +651,10 @@ static int __init gaming_control_init(void)
 	pm_qos_add_request(&gaming_control_min_mif_qos, PM_QOS_BUS_THROUGHPUT, PM_QOS_BUS_THROUGHPUT_DEFAULT_VALUE);
 	pm_qos_add_request(&gaming_control_min_little_qos, PM_QOS_CLUSTER0_FREQ_MIN, PM_QOS_CLUSTER0_FREQ_MIN_DEFAULT_VALUE);
 	pm_qos_add_request(&gaming_control_max_little_qos, PM_QOS_CLUSTER0_FREQ_MAX, PM_QOS_CLUSTER0_FREQ_MAX_DEFAULT_VALUE);
-	pm_qos_add_request(&gaming_control_min_big_qos, PM_QOS_CLUSTER1_FREQ_MIN, PM_QOS_CLUSTER1_FREQ_MIN_DEFAULT_VALUE);
-	pm_qos_add_request(&gaming_control_max_big_qos, PM_QOS_CLUSTER1_FREQ_MAX, PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE);
+	pm_qos_add_request(&gaming_control_min_mid_qos, PM_QOS_CLUSTER1_FREQ_MIN, PM_QOS_CLUSTER1_FREQ_MIN_DEFAULT_VALUE);
+	pm_qos_add_request(&gaming_control_max_mid_qos, PM_QOS_CLUSTER1_FREQ_MAX, PM_QOS_CLUSTER1_FREQ_MAX_DEFAULT_VALUE);
+	pm_qos_add_request(&gaming_control_min_big_qos, PM_QOS_CLUSTER2_FREQ_MIN, PM_QOS_CLUSTER2_FREQ_MIN_DEFAULT_VALUE);
+	pm_qos_add_request(&gaming_control_max_big_qos, PM_QOS_CLUSTER2_FREQ_MAX, PM_QOS_CLUSTER2_FREQ_MAX_DEFAULT_VALUE);
 	
 	gaming_control_kobj = kobject_create_and_add("gaming_control", kernel_kobj);
 	if (!gaming_control_kobj) {
@@ -618,6 +682,8 @@ static void __exit gaming_control_exit(void)
 	pm_qos_remove_request(&gaming_control_min_mif_qos);
 	pm_qos_remove_request(&gaming_control_min_little_qos);
 	pm_qos_remove_request(&gaming_control_max_little_qos);
+	pm_qos_remove_request(&gaming_control_min_mid_qos);
+	pm_qos_remove_request(&gaming_control_max_mid_qos);
 	pm_qos_remove_request(&gaming_control_min_big_qos);
 	pm_qos_remove_request(&gaming_control_max_big_qos);
 

@@ -2708,9 +2708,6 @@ struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup)
 	if (threadgroup)
 		tsk = tsk->group_leader;
 
-	if (cgrp && cgrp->kn && cgrp->kn->parent)
-                cgroup_game_check(tsk, cgrp->kn->parent->name);
-
 	/*
 	 * kthreads may acquire PF_NO_SETAFFINITY during initialization.
 	 * If userland migrates such a kthread to a non-root cgroup, it can

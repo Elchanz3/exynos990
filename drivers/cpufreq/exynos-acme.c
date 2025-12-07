@@ -1491,7 +1491,7 @@ static __init void init_slack_timer(struct exynos_cpufreq_domain *domain,
 }
 
 /*Underclocking little cores to 182 MHz*/
-unsigned long arg_cpu_min_c1 = 152000; 
+unsigned long arg_cpu_min_c1 = 182000; 
 
 static int __init cpufreq_read_cpu_min_c1(char *cpu_min_c1) /*integer remains in memory after function call*/
 {
@@ -1509,7 +1509,7 @@ static int __init cpufreq_read_cpu_min_c1(char *cpu_min_c1) /*integer remains in
 __setup("cpu_min_c1=", cpufreq_read_cpu_min_c1);
 
 /*Underclocking perf cores to 377 MHz*/
-unsigned long arg_cpu_min_c2 = 233000; 
+unsigned long arg_cpu_min_c2 = 377000; 
 
 static __init int cpufreq_read_cpu_min_c2(char *cpu_min_c2)
 {
@@ -1527,7 +1527,7 @@ static __init int cpufreq_read_cpu_min_c2(char *cpu_min_c2)
 __setup("cpu_min_c2=", cpufreq_read_cpu_min_c2);
 
 /*Underclocking prime cores to 546 MHz*/
-unsigned long arg_cpu_min_c3 = 233000; 
+unsigned long arg_cpu_min_c3 = 546000; 
 
 static __init int cpufreq_read_cpu_min_c3(char *cpu_min_c3)
 {
@@ -1598,7 +1598,7 @@ static int __init cpufreq_read_cpu_max_c1(char *cpu_max_c1) /*integer remains in
 __setup("cpu_max_c1=", cpufreq_read_cpu_max_c1);
 
 /*Overclocking perf cores to 2600 MHz*/
-unsigned long arg_cpu_max_c2 = 2650000; /*max_cpu_freq=2600 MHz*/
+unsigned long arg_cpu_max_c2 = 2600000; /*max_cpu_freq=2600 MHz*/
 
 static __init int cpufreq_read_cpu_max_c2(char *cpu_max_c2)
 {
@@ -1615,8 +1615,8 @@ static __init int cpufreq_read_cpu_max_c2(char *cpu_max_c2)
 }
 __setup("cpu_max_c2=", cpufreq_read_cpu_max_c2);
 
-/*Overclocking prime cores to 3116 MHz*/
-unsigned long arg_cpu_max_c3 = 3733000; /*max_cpu_freq=3116 MHz*/
+/*Overclocking prime cores to 3016 MHz*/
+unsigned long arg_cpu_max_c3 = 3016000; /*max_cpu_freq=3116 MHz*/
 
 static __init int cpufreq_read_cpu_max_c3(char *cpu_max_c3)
 {
@@ -1633,7 +1633,7 @@ static __init int cpufreq_read_cpu_max_c3(char *cpu_max_c3)
 }
 __setup("cpu_max_c3=", cpufreq_read_cpu_max_c3);
 
-unsigned long arg_gpu_max = 932000;
+unsigned long arg_gpu_max = 897000;
 
 static __init int cpufreq_read_gpu_max(char *gpu_max)
 {

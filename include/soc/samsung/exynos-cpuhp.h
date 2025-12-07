@@ -20,6 +20,30 @@ extern int exynos_cpuhp_request(char *name, struct cpumask mask, int type);
 
 extern int cpus_down(struct cpumask cpus);
 extern int cpus_up(struct cpumask cpus);
+
+/* old codes */
+struct kobject *exynos_cpu_hotplug_kobj(void);
+bool exynos_cpu_hotplug_enabled(void);
+bool exynos_cpu_hotplug_gov_enabled(void);
+void exynos_cpu_hotplug_gov_activated(void);
+
+void exynos_hpgov_update_rq_load(int cpu);
+int exynos_hpgov_update_cpu_capacity(int cpu);
+#ifdef CONFIG_EXYNOS_HOTPLUG_GOVERNOR
+void exynos_hpgov_validate_hpin(unsigned int cpu);
+void exynos_hpgov_validate_scale(unsigned int cpu, unsigned int target_freq);
+#else
+static inline void exynos_hpgov_validate_hpin(unsigned int cpu) {};
+static inline void exynos_hpgov_validate_scale(unsigned int cpu, unsigned int target_freq) {};
+#endif
+
+#define UPDATE_ONLINE_CPU (1)
+static BLOCKING_NOTIFIER_HEAD(exynos_cpuhotplug_notifier_list);
+int exynos_cpuhotplug_register_notifier(struct notifier_block *nb, unsigned int list);
+int exynos_cpuhotplug_unregister_notifier(struct notifier_block *nb, unsigned int list);
+
+bool exynos_cpufreq_get_unlock_freqs_status(void);
+
 /*
 extern inline int cpus_down(struct cpumask cpus) { return 0; };
 */

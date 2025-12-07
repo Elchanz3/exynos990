@@ -11,6 +11,7 @@ enum vclk_id {
 	VCLK_VDD_CAM,
 	VCLK_VDD_CPUCL0,
 	VCLK_VDD_CPUCL1,
+	VCLK_VDD_CPUCL2,
 	end_of_dfs_vclk,
 	num_of_dfs_vclk = end_of_dfs_vclk - DFS_VCLK_TYPE,
 
@@ -103,6 +104,7 @@ enum vclk_id {
 	VCLK_BLK_CMGP,
 	VCLK_BLK_CPUCL0,
 	VCLK_BLK_CPUCL1,
+	VCLK_BLK_CPUCL2,
 	VCLK_BLK_G3D,
 	VCLK_BLK_VTS,
 	VCLK_BLK_AUD,

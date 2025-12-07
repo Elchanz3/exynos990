@@ -28,6 +28,8 @@
 #include "gpex_dvfs_internal.h"
 #include "gpu_dvfs_governor.h"
 
+#include <linux/gaming_control.h>
+
 static struct dvfs_info *dvfs;
 
 /* TODO: This should be moved to DVFS module */

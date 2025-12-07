@@ -81,6 +81,24 @@ unsigned int vdd_cpucl1_sud_lut_params[] = {
 unsigned int vdd_cpucl1_uud_lut_params[] = {
 	300000,
 };
+unsigned int vdd_cpucl2_sod_lut_params[] = {
+	2730000,
+};
+unsigned int vdd_cpucl2_od_lut_params[] = {
+	1950000,
+};
+unsigned int vdd_cpucl2_nm_lut_params[] = {
+	1550000,
+};
+unsigned int vdd_cpucl2_ud_lut_params[] = {
+	1000000,
+};
+unsigned int vdd_cpucl2_sud_lut_params[] = {
+	600000,
+};
+unsigned int vdd_cpucl2_uud_lut_params[] = {
+	500000,
+};
 
 /* SPECIAL VCLK -> LUT Parameter List */
 unsigned int mux_clk_apm_i3c_pmic_nm_lut_params[] = {
@@ -425,6 +443,24 @@ unsigned int blk_cpucl1_sud_lut_params[] = {
 	0,
 };
 unsigned int blk_cpucl1_uud_lut_params[] = {
+	0,
+};
+unsigned int blk_cpucl2_sod_lut_params[] = {
+	0,
+};
+unsigned int blk_cpucl2_od_lut_params[] = {
+	0,
+};
+unsigned int blk_cpucl2_nm_lut_params[] = {
+	0,
+};
+unsigned int blk_cpucl2_ud_lut_params[] = {
+	0,
+};
+unsigned int blk_cpucl2_sud_lut_params[] = {
+	0,
+};
+unsigned int blk_cpucl2_uud_lut_params[] = {
 	0,
 };
 unsigned int blk_g3d_nm_lut_params[] = {

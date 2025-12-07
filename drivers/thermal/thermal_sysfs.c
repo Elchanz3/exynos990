@@ -37,7 +37,7 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
 	struct thermal_zone_device *tz = to_thermal_zone(dev);
 	int temperature, ret;
 
-	ret = thermal_zone_get_temp(tz, &temperature);
+	ret = thermal_zone_get_temp_gaming(tz, &temperature);
 
 	if (ret)
 		return ret;

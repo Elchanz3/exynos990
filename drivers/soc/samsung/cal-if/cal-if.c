@@ -84,7 +84,7 @@ int cal_dfs_set_rate_switch(unsigned int id, unsigned long switch_rate)
 	
 	unsigned long temp = cal_dfs_check_gaming_mode(id);
 	if (temp)
-		rate = temp;
+		switch_rate = temp;
 
 	ret = vclk_set_rate_switch(id, switch_rate);
 
@@ -147,10 +147,6 @@ int cal_clk_setrate(unsigned int id, unsigned long rate)
 unsigned long cal_clk_getrate(unsigned int id)
 {
 	unsigned long ret = 0;
-	
-	ret = cal_dfs_check_gaming_mode(id);
-	if (ret)
-		return ret;
 	
 	ret = cal_dfs_check_gaming_mode(id);
 	if (ret)

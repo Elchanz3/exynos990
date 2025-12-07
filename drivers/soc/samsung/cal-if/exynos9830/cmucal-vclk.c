@@ -102,6 +102,9 @@ enum clk_id cmucal_vclk_vdd_cpucl0[] = {
 enum clk_id cmucal_vclk_vdd_cpucl1[] = {
 	PLL_CPUCL1,
 };
+enum clk_id cmucal_vclk_vdd_cpucl2[] = {
+	PLL_CPUCL2,
+};
 /* SPECIAL VCLK -> Clock Node List */
 enum clk_id cmucal_vclk_mux_clk_apm_i3c_pmic[] = {
 	MUX_CLK_APM_I3C_PMIC,
@@ -453,6 +456,9 @@ enum clk_id cmucal_vclk_blk_cpucl0[] = {
 };
 enum clk_id cmucal_vclk_blk_cpucl1[] = {
 	MUX_CLK_CPUCL1_PLL,
+};
+enum clk_id cmucal_vclk_blk_cpucl2[] = {
+	MUX_CLK_CPUCL2_PLL,
 };
 enum clk_id cmucal_vclk_blk_g3d[] = {
 	DIV_CLK_G3D_BUSP,
@@ -3508,6 +3514,14 @@ struct vclk_lut cmucal_vclk_vdd_cpucl1_lut[] = {
 	{600000, vdd_cpucl1_sud_lut_params},
 	{300000, vdd_cpucl1_uud_lut_params},
 };
+struct vclk_lut cmucal_vclk_vdd_cpucl2_lut[] = {
+	{2730000, vdd_cpucl2_sod_lut_params},
+	{1950000, vdd_cpucl2_od_lut_params},
+	{1550000, vdd_cpucl2_nm_lut_params},
+	{1000000, vdd_cpucl2_ud_lut_params},
+	{600000, vdd_cpucl2_sud_lut_params},
+	{500000, vdd_cpucl2_uud_lut_params},
+};
 
 /* SPECIAL VCLK -> LUT List */
 struct vclk_lut cmucal_vclk_mux_clk_apm_i3c_pmic_lut[] = {
@@ -3758,6 +3772,14 @@ struct vclk_lut cmucal_vclk_blk_cpucl1_lut[] = {
 	{600000, blk_cpucl1_sud_lut_params},
 	{300000, blk_cpucl1_uud_lut_params},
 };
+struct vclk_lut cmucal_vclk_blk_cpucl2_lut[] = {
+	{2730000, blk_cpucl2_sod_lut_params},
+	{1950000, blk_cpucl2_od_lut_params},
+	{1550000, blk_cpucl2_nm_lut_params},
+	{1000000, blk_cpucl2_ud_lut_params},
+	{600000, blk_cpucl2_sud_lut_params},
+	{500000, blk_cpucl2_uud_lut_params},
+};
 struct vclk_lut cmucal_vclk_blk_g3d_lut[] = {
 	{225000, blk_g3d_nm_lut_params},
 };
@@ -3853,6 +3875,7 @@ struct vclk cmucal_vclk_list[] = {
 	CMUCAL_VCLK(VCLK_VDD_CAM, cmucal_vclk_vdd_cam_lut, cmucal_vclk_vdd_cam, NULL, switch_vdd_cam),
 	CMUCAL_VCLK(VCLK_VDD_CPUCL0, cmucal_vclk_vdd_cpucl0_lut, cmucal_vclk_vdd_cpucl0, NULL, NULL),
 	CMUCAL_VCLK(VCLK_VDD_CPUCL1, cmucal_vclk_vdd_cpucl1_lut, cmucal_vclk_vdd_cpucl1, NULL, NULL),
+	CMUCAL_VCLK(VCLK_VDD_CPUCL2, cmucal_vclk_vdd_cpucl2_lut, cmucal_vclk_vdd_cpucl2, NULL, NULL),
 
 /* SPECIAL VCLK*/
 	CMUCAL_VCLK(VCLK_MUX_CLK_APM_I3C_PMIC, cmucal_vclk_mux_clk_apm_i3c_pmic_lut, cmucal_vclk_mux_clk_apm_i3c_pmic, NULL, NULL),
@@ -3939,6 +3962,7 @@ struct vclk cmucal_vclk_list[] = {
 	CMUCAL_VCLK(VCLK_BLK_CMGP, cmucal_vclk_blk_cmgp_lut, cmucal_vclk_blk_cmgp, NULL, NULL),
 	CMUCAL_VCLK(VCLK_BLK_CPUCL0, cmucal_vclk_blk_cpucl0_lut, cmucal_vclk_blk_cpucl0, NULL, NULL),
 	CMUCAL_VCLK(VCLK_BLK_CPUCL1, cmucal_vclk_blk_cpucl1_lut, cmucal_vclk_blk_cpucl1, NULL, NULL),
+	CMUCAL_VCLK(VCLK_BLK_CPUCL2, cmucal_vclk_blk_cpucl2_lut, cmucal_vclk_blk_cpucl2, NULL, NULL),
 	CMUCAL_VCLK(VCLK_BLK_G3D, cmucal_vclk_blk_g3d_lut, cmucal_vclk_blk_g3d, NULL, NULL),
 	CMUCAL_VCLK(VCLK_BLK_VTS, cmucal_vclk_blk_vts_lut, cmucal_vclk_blk_vts, NULL, NULL),
 	CMUCAL_VCLK(VCLK_BLK_AUD, cmucal_vclk_blk_aud_lut, cmucal_vclk_blk_aud, NULL, NULL),
