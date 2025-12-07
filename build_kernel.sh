@@ -87,6 +87,7 @@ cd "$CDIR"
 
 # move generated image to builds dir renamed as Puppykernel
 mv "$CDIR"/AIK/image-new.img "$CDIR"/builds/"$IMAGE_NAME".img
+cp "$AK3"/dtbo.img "$CDIR"/builds/
 
 echo "image done..."
 
