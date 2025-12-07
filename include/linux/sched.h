@@ -687,6 +687,9 @@ struct task_struct {
 	/* Per task flags (PF_*), defined further below: */
 	unsigned int			flags;
 	unsigned int			ptrace;
+	
+	/* Android app state */
+	int app_state;
 
 #ifdef CONFIG_SMP
 	struct llist_node		wake_entry;

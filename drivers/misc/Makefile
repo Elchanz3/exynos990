@@ -61,6 +61,9 @@ obj-$(CONFIG_MISC_RTSX)		+= cardreader/
 obj-$(CONFIG_UID_SYS_STATS)	+= uid_sys_stats.o
 obj-$(CONFIG_EXYNOS_PASR)	+= exynos_pasr.o
 
+# Gaming mode
+obj-$(CONFIG_GAMING_CONTROL)		+= gaming_control.o
+
 # TEEGRIS kernel driver
 ccflags-$(CONFIG_TZDEV) += -I$(srctree)/drivers/misc/tzdev/include
 obj-$(CONFIG_TZDEV)		+= tzdev/

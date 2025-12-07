@@ -45,6 +45,9 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/signal.h>
 
+/* Gaming control */
+#include <linux/gaming_control.h>
+
 #include <asm/param.h>
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
@@ -1257,14 +1260,8 @@ int do_send_sig_info(int sig, struct siginfo *info, struct task_struct *p,
 	unsigned long flags;
 	int ret = -ESRCH;
 
-#ifdef CONFIG_SAMSUNG_FREECESS
-	/*
-	 * System will send SIGIO to the app that locked the file when other apps access the file.
-	 * Report SIGIO to prevent other apps from getting stuck
-	 */
-	if ((sig == SIGKILL || sig == SIGTERM || sig == SIGABRT || sig == SIGQUIT || sig == SIGIO))
-		sig_report(p);
-#endif
+	if ((sig == SIGKILL || sig == SIGTERM || sig == SIGABRT || sig == SIGQUIT)) 
+		game_option(p, GAME_KILLED);
 
 	if (lock_task_sighand(p, &flags)) {
 		ret = send_signal(sig, info, p, type);

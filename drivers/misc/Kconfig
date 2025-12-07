@@ -537,6 +537,14 @@ config UID_SYS_STATS_DEBUG
 config DEV_RIL_BRIDGE
 	bool "Support a bridge between device and RIL"
 	default n
+	
+config GAMING_CONTROL
+	tristate "Kernel gaming control"
+	help
+	  This adds support for in-kernel gaming control that hooks into
+	  specific drivers to enhance gaming experience. The driver fetches
+	  Android process list generated in sysfs to turn on gaming mode
+	  when the processes are running foreground
 
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
