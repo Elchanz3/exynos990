@@ -921,6 +921,36 @@ static const struct attribute_group fvmap_group = {
 	.attrs = fvmap_attrs,
 };
 
+static const char *get_regulator_name(unsigned int margin_id)
+{
+    static const char *regulator_names[MAX_MARGIN_ID] = {
+        [MARGIN_MIF]    = "m_vdd_buck1",    /* MIF - Memory Interface (BUCK1M) */
+        [MARGIN_INT]    = "m_vdd_buck2",    /* INT - Internal (BUCK2M) */
+        [MARGIN_BIG]    = "m_vdd_buck7",    /* CPUCL0 - Little cluster (BUCK7M) */
+        [MARGIN_MID]    = "m_vdd_buck8",    /* CPUCL1 - Middle cluster (BUCK8M) */
+        [MARGIN_LIT]    = "m_vdd_buck9",    /* CPUCL2 - Big cluster (BUCK9M) */
+        [MARGIN_G3D]    = "s_vdd_buck3",    /* G3D - GPU (BUCK3S) */
+        [MARGIN_INTCAM] = "m_vdd_ldo5",     /* INTCAM - Internal Camera (LDO5M) */
+        [MARGIN_CAM]    = "m_vdd_ldo6",     /* CAM - Camera (LDO6M) */
+        [MARGIN_DISP]   = "m_vdd_buck6",    /* DISP - Display (BUCK6M) */
+        [MARGIN_CP]     = "s_vdd_buck4",    /* CP - Communication Processor (BUCK4S) */
+        [MARGIN_FSYS0]  = "m_vdd_ldo4",     /* FSYS0 - File System (LDO4M) */
+        [MARGIN_AUD]    = "s_vdd_ldo5",     /* AUD - Audio (LDO5S) */
+        [MARGIN_IVA]    = "m_vdd_buck3",    /* IVA - Image Video Accelerator (BUCK3M) */
+        [MARGIN_SCORE]  = "m_vdd_buck5",    /* SCORE (BUCK5M) */
+        [MARGIN_NPU]    = "m_vdd_buck10",   /* NPU - Neural Processing Unit (BUCK10M) */
+        [MARGIN_MFC]    = "m_vdd_ldo9",     /* MFC - Multi Format Codec (LDO9M) */
+        [MARGIN_DSP]    = "m_vdd_buck11",   /* DSP - Digital Signal Processor (BUCK11M) */
+        [MARGIN_DNC]    = "s_vdd_buck2",    /* DNC (BUCK2S) */
+        [MARGIN_TNR]    = "m_vdd_ldo18",    /* TNR - Temporal Noise Reduction (LDO18M) */
+    };
+
+    if (margin_id < MAX_MARGIN_ID && regulator_names[margin_id])
+        return regulator_names[margin_id];
+    
+    return "Unknown";
+}
+
 static ssize_t format_sram_table(char *buf, size_t buf_size)
 {
 	volatile struct fvmap_header *fvmap_header;
@@ -947,6 +977,8 @@ static ssize_t format_sram_table(char *buf, size_t buf_size)
 		len += scnprintf(buf + len, buf_size - len,
 				"Domain: %s (ID: 0x%x, Margin ID: %d)\n",
 				vclk->name, fvmap_header[i].dvfs_type, vclk->margin_id);
+		len += scnprintf(buf + len, buf_size - len,
+				"Regulator: %s\n", get_regulator_name(vclk->margin_id));
 		len += scnprintf(buf + len, buf_size - len,
 				"Levels: %d, Members: %d\n",
 				fvmap_header[i].num_of_lv, fvmap_header[i].num_of_members);
