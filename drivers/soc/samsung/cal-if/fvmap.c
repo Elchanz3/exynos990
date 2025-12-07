@@ -422,6 +422,8 @@ static const struct attribute_group percent_margin_group = {
 	.attrs = percent_margin_attrs,
 };
 
+static struct kobject *fvmap_kobj;
+
 static void optimize_rate_volt_table(struct rate_volt_header *head, unsigned int num_of_lv) {
 	bool changed;
 	int i;
@@ -919,6 +921,87 @@ static const struct attribute_group fvmap_group = {
 	.attrs = fvmap_attrs,
 };
 
+static ssize_t format_sram_table(char *buf, size_t buf_size)
+{
+	volatile struct fvmap_header *fvmap_header;
+	struct rate_volt_header *cur;
+	struct vclk *vclk;
+	int size, i, j;
+	ssize_t len = 0;
+
+	fvmap_header = sram_fvmap_base;
+	size = cmucal_get_list_size(ACPM_VCLK_TYPE);
+
+	len += scnprintf(buf + len, buf_size - len,
+			"SRAM Frequency-Voltage Table Data:\n");
+	len += scnprintf(buf + len, buf_size - len,
+			"==================================\n\n");
+
+	for (i = 0; i < size; i++) {
+		vclk = cmucal_get_node(ACPM_VCLK_TYPE | i);
+		if (vclk == NULL)
+			continue;
+
+		cur = sram_fvmap_base + fvmap_header[i].o_ratevolt;
+
+		len += scnprintf(buf + len, buf_size - len,
+				"Domain: %s (ID: 0x%x, Margin ID: %d)\n",
+				vclk->name, fvmap_header[i].dvfs_type, vclk->margin_id);
+		len += scnprintf(buf + len, buf_size - len,
+				"Levels: %d, Members: %d\n",
+				fvmap_header[i].num_of_lv, fvmap_header[i].num_of_members);
+		len += scnprintf(buf + len, buf_size - len,
+				"----------------------------------------\n");
+		len += scnprintf(buf + len, buf_size - len,
+				"Level | Frequency(kHz) | Voltage(uV)   |\n");
+		len += scnprintf(buf + len, buf_size - len,
+				"----------------------------------------\n");
+
+		for (j = 0; j < fvmap_header[i].num_of_lv; j++) {
+			len += scnprintf(buf + len, buf_size - len,
+					"%-5d | %-13d | %-13d |\n",
+					j, cur->table[j].rate, cur->table[j].volt);
+		}
+
+		len += scnprintf(buf + len, buf_size - len,
+				"----------------------------------------\n");
+		len += scnprintf(buf + len, buf_size - len,
+				"Current Margin: %d%%\n\n", percent_margin_table[vclk->margin_id]);
+	}
+
+	return len;
+}
+
+static ssize_t sram_read(struct file *file, struct kobject *kobj,
+			 struct bin_attribute *attr, char *buf,
+			 loff_t offset, size_t count)
+{
+	ssize_t total_len;
+	char *temp_buf;
+	size_t temp_size = 32768; /* 32KB buffer */
+
+	temp_buf = kzalloc(temp_size, GFP_KERNEL);
+	if (!temp_buf)
+		return -ENOMEM;
+
+	total_len = format_sram_table(temp_buf, temp_size);
+
+	if (offset >= total_len) {
+		kfree(temp_buf);
+		return 0;
+	}
+
+	if (count > total_len - offset)
+		count = total_len - offset;
+
+	memcpy(buf, temp_buf + offset, count);
+	kfree(temp_buf);
+
+	return count;
+}
+
+static BIN_ATTR_RO(sram, 0);
+
 int fvmap_init(void __iomem *sram_base)
 {
 	void __iomem *map_base;
@@ -934,10 +1017,24 @@ int fvmap_init(void __iomem *sram_base)
 	pr_info("%s:fvmap initialize %p\n", __func__, sram_base);
 	fvmap_copy_from_sram(map_base, sram_base);
 
-	/* percent margin for each doamin at runtime */
+	/* Create fvmap directory in /sys/kernel/ */
+	fvmap_kobj = kobject_create_and_add("fvmap", kernel_kobj);
+	if (!fvmap_kobj) {
+		pr_err("Failed to create fvmap kobject\n");
+		return -ENOMEM;
+	}
+
+	/* Create sram binary file */
+	if (sysfs_create_bin_file(fvmap_kobj, &bin_attr_sram)) {
+		pr_err("Failed to create sram binary file\n");
+		kobject_put(fvmap_kobj);
+		return -ENOMEM;
+	}
+
+	/* percent margin for each domain at runtime */
 	kobj = kobject_create_and_add("percent_margin", power_kobj);
 	if (!kobj)
-		pr_err("Fail to create percent_margin kboject\n");
+		pr_err("Fail to create percent_margin kobject\n");
 
 	if (sysfs_create_group(kobj, &percent_margin_group))
 		pr_err("Fail to create percent_margin group\n");
