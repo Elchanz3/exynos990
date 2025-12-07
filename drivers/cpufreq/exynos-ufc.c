@@ -28,6 +28,7 @@
 #include <linux/pm_opp.h>
 #include <linux/ems.h>
 #include <linux/exynos-ucc.h>
+#include <linux/gaming_control.h>
 #include <linux/sysfs_helpers.h>
 
 #include <soc/samsung/cal-if.h>
@@ -548,6 +549,24 @@ static void ufc_update_limit(int input_freq, int ctrl_type, int mode)
 	}
 }
 
+/*
+ * Log2 of the number of scale size. The frequencies are scaled up or
+ * down as the multiple of this number.
+ */
+#define SCALE_SIZE	2
+
+static int last_max_limit = -1;
+static int sse_mode;
+static bool unlock_freqs_switch = false;
+
+bool exynos_cpufreq_get_unlock_freqs_status()
+{
+	if (gaming_mode)
+		return true;
+
+	return unlock_freqs_switch;
+}
+
 static ssize_t ufc_show_cpufreq_table(struct kobject *kobj,
 				struct kobj_attribute *attr, char *buf)
 {
@@ -775,10 +794,18 @@ static ssize_t ufc_store_cpufreq_min_limit_wo_boost(struct kobject *kobj,
 	return count;
 }
 
+void exynos_cpufreq_set_gaming_mode(void) {
+	last_max_limit = -1;
+	ufc_update_limit(last_max_limit);
+}
+
 static ssize_t ufc_store_cpufreq_max_limit(struct kobject *kobj, struct kobj_attribute *attr,
 					const char *buf, size_t count)
 {
 	int input;
+	
+	if (exynos_cpufreq_get_unlock_freqs_status())
+		return count;
 
 	if (!sscanf(buf, "%8d", &input))
 		return -EINVAL;

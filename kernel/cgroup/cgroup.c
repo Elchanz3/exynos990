@@ -61,13 +61,22 @@
 #define CREATE_TRACE_POINTS
 #include <trace/events/cgroup.h>
 
-/* Gaming control */
-#include <linux/gaming_control.h>
-
 #define CGROUP_FILE_NAME_MAX		(MAX_CGROUP_TYPE_NAMELEN +	\
 					 MAX_CFTYPE_NAME + 2)
 /* let's not notify more than 100 times per second */
 #define CGROUP_FILE_NOTIFY_MIN_INTV	DIV_ROUND_UP(HZ, 100)
+
+/* Gaming control */
+#include <linux/gaming_control.h>
+
+/* Check if the task is a game */
+static void cgroup_game_check(struct task_struct *tsk, const char *name)
+{
+	if (!strcmp(name, "top-app"))
+		game_option(tsk, GAME_RUNNING);
+	else if (!strcmp(name, "background"))
+		game_option(tsk, GAME_PAUSE);
+}
 
 /*
  * cgroup_mutex is the master lock.  Any modification to cgroup or its
@@ -2698,13 +2707,9 @@ struct task_struct *cgroup_procs_write_start(char *buf, bool threadgroup)
 
 	if (threadgroup)
 		tsk = tsk->group_leader;
-		
-	/* Check if the task is a game */
-	if (!memcmp(cgrp->kn->name, "top-app", sizeof("top-app")) && !ret) {
-		game_option(tsk, GAME_RUNNING);
-	} else if (!memcmp(cgrp->kn->name, "background", sizeof("background")) && !ret) {
-		game_option(tsk, GAME_PAUSE);
-	}
+
+	if (!ret)
+		cgroup_game_check(tsk, of->kn->parent->name);
 
 	/*
 	 * kthreads may acquire PF_NO_SETAFFINITY during initialization.
