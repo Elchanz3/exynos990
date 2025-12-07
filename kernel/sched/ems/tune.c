@@ -36,8 +36,8 @@ static struct emstune_mode *emstune_modes;
 static struct emstune_mode *cur_mode;
 static struct emstune_set cur_set;
 static int emstune_cur_level;
-int emstune_wake_wide = true;
-int emstune_hungry = true;
+int emstune_wake_wide = false;
+int emstune_hungry = false;
 
 static int emstune_mode_count;
 static int emstune_level_count;

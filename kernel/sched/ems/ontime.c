@@ -135,39 +135,7 @@ void ontime_select_fit_cpus(struct task_struct *p, struct cpumask *fit_cpus)
 	 *
 	 * fit_cpus = cpu_active_mask
 	 */
-	if (runnable < dom->lower_boundary) {
-		cpumask_copy(&mask, cpu_active_mask);
-		goto done;
-	}
-
-	cpumask_clear(&mask);
-
-	/*
-	 * case 2) lower boundary <= task ruuanble < upper boundary
-	 *
-	 * If task 'runnable' is between lower boundary and upper boundary of
-	 * current domain, both current and faster domain are fit.
-	 *
-	 * fit_cpus = current cpus & faster cpus
-	 */
-	if (runnable < dom->upper_boundary) {
-		cpumask_or(&mask, &mask, &dom->cpus);
-		list_for_each_entry_continue(dom, list, node)
-			cpumask_or(&mask, &mask, &dom->cpus);
-
-		goto done;
-	}
-
-	/*
-	 * case 3) task ruuanble >= upper boundary
-	 *
-	 * If task 'runnable' is greater than boundary of current domain, only
-	 * faster domain is fit to gurantee cpu performance.
-	 *
-	 * fit_cpus = faster cpus
-	 */
-	list_for_each_entry_continue(dom, list, node)
-		cpumask_or(&mask, &mask, &dom->cpus);
+	cpumask_copy(&mask, cpu_active_mask);
 
 done:
 	cpumask_copy(fit_cpus, &mask);

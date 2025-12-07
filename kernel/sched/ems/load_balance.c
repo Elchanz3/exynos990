@@ -154,7 +154,7 @@ bool lbt_overutilized(int cpu, int level, enum cpu_idle_type idle)
 	if (idle == CPU_NEWLY_IDLE)
 		overutilized = false;
 	else
-		overutilized = (ml_cpu_util(cpu) > ou[level].capacity)
+		overutilized = (ml_cpu_util(cpu) > (ou[level].capacity * 125 / 100))
 						? true : false;
 
 	if (overutilized)

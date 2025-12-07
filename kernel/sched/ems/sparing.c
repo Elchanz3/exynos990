@@ -198,7 +198,7 @@ int ecs_is_sparing_cpu(int cpu)
 
 struct cpumask *ecs_cpus_allowed(void)
 {
-	return &ecs_gov.cpus;
+	return cpu_possible_mask;
 }
 
 /**********************************************************************************

@@ -73,11 +73,7 @@ compute_efficiency(struct tp_env *env, int target_cpu, unsigned int eff_weight)
 	util = ml_cpu_util_with(target_cpu, p);
 	energy = compute_energy(table, p, target_cpu, cap_idx);
 
-	/*
-	 * Compute performance efficiency
-	 *  efficiency = (capacity / util) / energy
-	 */
-	eff = (capacity << SCHED_CAPACITY_SHIFT * 2) / energy;
+	eff = capacity << SCHED_CAPACITY_SHIFT;
 	eff = (eff * eff_weight) / 100;
 
 	trace_ems_compute_eff(p, target_cpu, util, eff_weight,
@@ -131,14 +127,7 @@ skip_find_running:
 	if (best_cpu == INVALID_CPU)
 		return INVALID_CPU;
 
-	if (prev_eff && cpumask_test_cpu(best_cpu, cpu_coregroup_mask(prev_cpu))) {
-		/*
-		 * delta of efficiency between prev and best cpu is under 6.25%,
-		 * keep the task on prev cpu
-		 */
-		if (prev_eff && (best_eff - prev_eff) < (prev_eff >> 4))
-			return prev_cpu;
-	}
+
 
 	return best_cpu;
 }
@@ -153,15 +142,11 @@ static int find_biggest_spare_cpu(int sse,
 
 	for_each_cpu(cpu, candidates) {
 		int curr_cap;
-		int spare_cap;
 
-		/* get current cpu capacity */
-		curr_cap = (capacity_cpu(cpu, sse)
-				* arch_scale_freq_capacity(cpu)) >> SCHED_CAPACITY_SHIFT;
-		spare_cap = curr_cap - cpu_util_wo[cpu];
+		curr_cap = capacity_cpu(cpu, sse);
 
-		if (max_cap < spare_cap) {
-			max_cap = spare_cap;
+		if (max_cap < curr_cap) {
+			max_cap = curr_cap;
 			max_cpu = cpu;
 		}
 	}
@@ -180,10 +165,6 @@ static int set_candidate_cpus(struct tp_env *env, int task_util, const struct cp
 		unsigned long capacity = capacity_cpu(cpu, env->p->sse);
 
 		if (!cpumask_test_cpu(cpu, &env->p->cpus_allowed))
-			continue;
-
-		/* remove overfit cpus from candidates */
-		if (likely(!bind) && (capacity < (cpu_util_wo[cpu] + task_util)))
 			continue;
 
 		if (!cpu_rq(cpu)->nr_running)

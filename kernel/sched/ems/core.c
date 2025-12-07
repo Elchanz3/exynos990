@@ -113,7 +113,6 @@ combine_cpumask:
 	 *    fit_cpus = cpus_allowed & ontime_fit_cpus & ~overcap_cpus
 	 */
 	cpumask_and(&fit_cpus, &cpus_allowed, &ontime_fit_cpus);
-	cpumask_andnot(&fit_cpus, &fit_cpus, &overcap_cpus);
 
 	/*
 	 * Case: task migration
@@ -125,7 +124,6 @@ combine_cpumask:
 	 *    fit_cpus = fit_cpus & ~busy_cpus
 	 */
 	if (!env->wake) {
-		cpumask_andnot(&fit_cpus, &fit_cpus, &busy_cpus);
 		goto finish;
 	}
 
@@ -215,16 +213,6 @@ static void get_ready_env(struct tp_env *env)
  */
 static int wake_wide(int sch)
 {
-	if (!emstune_wake_wide)
-		return 0;
-
-	if (emstune_boosted())
-		return 0;
-
-	/* allow wake wide if sch is greater than NR_CPUS-2 */
-	if (sch + 2 >= NR_CPUS)
-		return 1;
-
 	return 0;
 }
 
