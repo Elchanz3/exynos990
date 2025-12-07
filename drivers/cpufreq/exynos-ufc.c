@@ -795,8 +795,8 @@ static ssize_t ufc_store_cpufreq_min_limit_wo_boost(struct kobject *kobj,
 }
 
 void exynos_cpufreq_set_gaming_mode(void) {
-	last_max_limit = -1;
-	ufc_update_limit(last_max_limit);
+    last_max_limit = -1;
+    ufc_update_limit(last_max_limit, PM_QOS_MAX_LIMIT, ufc.sse_mode);
 }
 
 static ssize_t ufc_store_cpufreq_max_limit(struct kobject *kobj, struct kobj_attribute *attr,
