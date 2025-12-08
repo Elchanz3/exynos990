@@ -24,7 +24,12 @@
 #include <gpex_utils.h>
 #include <gpex_clboost.h>
 
+#include <soc/samsung/cal-if.h>
+#include <linux/sysfs_helpers.h>
+
 #include <linux/regulator/consumer.h>
+
+#define GPU_DVFS_TYPE		4
 
 #include "gpex_clock_internal.h"
 
@@ -515,10 +520,50 @@ GPEX_STATIC ssize_t show_volt(char *buf)
 CREATE_SYSFS_DEVICE_READ_FUNCTION(show_volt)
 CREATE_SYSFS_KOBJECT_READ_FUNCTION(show_volt)
 
+GPEX_STATIC ssize_t show_volt_table(char *buf)
+{
+	ssize_t count = 0, pr_len;
+	int i, max, min;
+
+	max = gpex_clock_get_table_idx(clk_info->gpu_max_clock);
+	min = gpex_clock_get_table_idx(clk_info->gpu_min_clock);
+	pr_len = (size_t)((PAGE_SIZE - 2) / (min-max));
+
+	for (i = max; i <= min; i++)
+		count += snprintf(&buf[count], pr_len, "%d %d\n", 
+				clk_info->table[i].clock,
+				clk_info->table[i].voltage);
+
+	return count;
+}
+CREATE_SYSFS_DEVICE_READ_FUNCTION(show_volt_table)
+
+GPEX_STATIC ssize_t set_volt_table(const char *buf, size_t count)
+{
+	int max = gpex_clock_get_table_idx(clk_info->gpu_max_clock);
+	int min = gpex_clock_get_table_idx(clk_info->gpu_min_clock);
+	int i, tokens;
+	int t[min - max];
+
+	if ((tokens = read_into((int*)&t, min-max, buf, count)) < 0)
+		return -EINVAL;
+
+	if (tokens == 2)
+		fvmap_patch(GPU_DVFS_TYPE, t[0], t[1]);
+	else
+		for (i = 0; i < tokens; i++)
+			fvmap_patch(GPU_DVFS_TYPE, clk_info->table[i + max].clock, t[i]);
+
+	gpex_clock_update_config_data_from_dt();
+
+	return count;
+}
+CREATE_SYSFS_DEVICE_WRITE_FUNCTION(set_volt_table)
+
 int gpex_clock_sysfs_init(struct _clock_info *_clk_info)
 {
 	clk_info = _clk_info;
-	g3d_regulator = regulator_get(NULL, "s_vdd_buck3");
+	g3d_regulator = regulator_get(NULL, "s_vdd_buck1");
 
 	if (IS_ERR(g3d_regulator))
 		g3d_regulator = NULL;
@@ -531,6 +576,7 @@ int gpex_clock_sysfs_init(struct _clock_info *_clk_info)
 	GPEX_UTILS_SYSFS_DEVICE_FILE_ADD_RO(dvfs_max_lock_status, show_max_lock_status);
 	GPEX_UTILS_SYSFS_DEVICE_FILE_ADD_RO(dvfs_min_lock_status, show_min_lock_status);
 	GPEX_UTILS_SYSFS_DEVICE_FILE_ADD_RO(volt, show_volt);
+	GPEX_UTILS_SYSFS_DEVICE_FILE_ADD(volt_table, show_volt_table, set_volt_table);
 
 	GPEX_UTILS_SYSFS_KOBJECT_FILE_ADD(gpu_max_clock, show_max_lock_dvfs_kobj,
 					  set_max_lock_dvfs);
